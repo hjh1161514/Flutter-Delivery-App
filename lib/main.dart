@@ -11,6 +11,9 @@ class _App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp( // 최상위에는 무조건 MaterialApp이 들어가야 함
+      theme: ThemeData(
+        fontFamily: 'NotoSans',
+      ),
       debugShowCheckedModeBanner: false, // debug 배너 안 보이도록
       home: Scaffold(
         backgroundColor: Colors.white,
