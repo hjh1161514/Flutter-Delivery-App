@@ -26,17 +26,23 @@ class _SplashScreenState extends State<SplashScreen> {
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
 
     if (refreshToken == null || accessToken == null) {
-      Navigator.of(context).pushAndRemoveUntil( // pushAndRemoveUntil(가고싶은라우터, )
-          MaterialPageRoute(builder: (_) => LoginScreen(),
-          )
-          , (route) => false
-      );
+      if(context.mounted) {
+        // pushAndRemoveUntil : 쌓인 페이지를 다 지우고 이동
+        Navigator.of(context).pushAndRemoveUntil( // pushAndRemoveUntil(가고싶은라우터, )
+            MaterialPageRoute(builder: (_) => LoginScreen(),
+            )
+            , (route) => false
+        );
+      }
+
     } else {
-      Navigator.of(context).pushAndRemoveUntil( // pushAndRemoveUntil(가고싶은라우터, )
-          MaterialPageRoute(builder: (_) => RootTab(),
-          )
-          , (route) => false
-      );
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil( // pushAndRemoveUntil(가고싶은라우터, )
+            MaterialPageRoute(builder: (_) => RootTab(),
+            )
+            , (route) => false
+        );
+      }
     }
   }
 

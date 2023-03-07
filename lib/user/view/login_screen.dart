@@ -92,11 +92,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         await storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
 
                         // 화면 이동
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
+                        if(context.mounted) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
                               builder: (_) => RootTab(),
-                          ),
-                        );
+                            ),
+                          );
+                        }
 
                       },
                       style: ElevatedButton.styleFrom(
