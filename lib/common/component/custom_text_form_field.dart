@@ -46,6 +46,7 @@ class CustomTextFormField extends StatelessWidget {
         // 동그랗게 border
         // border: 모든 Input 상태의 기본 스타일 세팅
         border: baseBorder,
+        enabledBorder: baseBorder, // 선택되지 않은 상태에서 border
         // 포커스 되었을 때의 상태
         focusedBorder:  baseBorder.copyWith( // cobyWith은 앞의 속성을 그대로 사용하면서 바꾸고 싶은 부분(아래)만 변경
           borderSide: baseBorder.borderSide.copyWith( // baseBorder는 그대로 borderSide 값만 변경. -> baseBorder의 borderSide로 변경.
