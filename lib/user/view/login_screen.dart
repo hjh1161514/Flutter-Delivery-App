@@ -5,12 +5,23 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/const/colors.dart';
+import 'package:flutter_delivery_app/common/const/data.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../common/component/custom_text_form_field.dart';
+import '../../common/view/root_tab.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  String username = '';
+  String password = '';
 
   @override
   Widget build(BuildContext context) {
@@ -42,19 +53,23 @@ class LoginScreen extends StatelessWidget {
                   ),
                   CustomTextFormField(
                     hintText: '이메일을 입력해주세요.',
-                    onChanged: (String value) {  },
+                    onChanged: (String value) {
+                      username = value;
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   CustomTextFormField(
                     hintText: '비밀번호를 입력해주세요.',
-                    onChanged: (String value) {  },
+                    onChanged: (String value) {
+                      password = value;
+                    },
                     obscureText: true,
                   ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
                       onPressed: () async { // 서버 통신에서는 async, await 필수
                         // ID:비밀번호
-                        final rawString = 'test@codefactory.ai:testtest';
+                        final rawString = '$username:$password';
 
                         // 일반 string값을 base64로 변환
                         // string값을 넣어서 string값을 반환
@@ -70,7 +85,19 @@ class LoginScreen extends StatelessWidget {
                           )
                         );
 
-                        print(resp.data); // 응답값을 받을 수 있음. body = resp.data
+                        final refreshToken = resp.data['refreshToken']; // body = resp.data
+                        final accessToken = resp.data['accessToken'];
+
+                        await storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
+                        await storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
+
+                        // 화면 이동
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => RootTab(),
+                          ),
+                        );
+
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PRIMARY_COLOR,
