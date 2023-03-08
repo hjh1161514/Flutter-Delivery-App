@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/const/colors.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
+import 'package:flutter_delivery_app/restaurant/view/restaurant_screen.dart';
 
 class RootTab extends StatefulWidget {
   const RootTab({Key? key}) : super(key: key);
@@ -76,7 +77,7 @@ class _RootTabState extends State<RootTab>
         physics: NeverScrollableScrollPhysics(), // TabBarview에서 스크롤 시에 이동을 막음
         controller: controller,
         children: [
-          Container(child: Text('홈')),
+          RestaurantScreen(),
           Container(child: Text('음식')),
           Container(child: Text('주문')),
           Container(child: Text('프로필')),
