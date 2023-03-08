@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/const/data.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
@@ -25,20 +26,33 @@ class _SplashScreenState extends State<SplashScreen> {
     final refreshToken = await storage.read(key: REFRESH_TOKEN_KEY);
     final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
 
-    if (refreshToken == null || accessToken == null) {
-      if(context.mounted) {
+    final dio = Dio();
+
+    // 에러 잡기 - refreshToken이 만료
+    try {
+      final resp = await dio.post('http://$ip/auth/token',
+        options: Options(
+          headers: {
+            'authorization' : 'Bearer $refreshToken',
+          },
+        ),
+      );
+
+      // 에러가 없으면 정상적으로 rootTab 이동
+      if (context.mounted) {
         // pushAndRemoveUntil : 쌓인 페이지를 다 지우고 이동
         Navigator.of(context).pushAndRemoveUntil( // pushAndRemoveUntil(가고싶은라우터, )
-            MaterialPageRoute(builder: (_) => LoginScreen(),
+            MaterialPageRoute(builder: (_) => RootTab(),
             )
             , (route) => false
         );
       }
-
-    } else {
-      if (context.mounted) {
+    } catch(e) {
+      // 에러가 나면 문제가 있는 거니까 로그인 스크린으로 이동
+      if(context.mounted) {
+        // pushAndRemoveUntil : 쌓인 페이지를 다 지우고 이동
         Navigator.of(context).pushAndRemoveUntil( // pushAndRemoveUntil(가고싶은라우터, )
-            MaterialPageRoute(builder: (_) => RootTab(),
+            MaterialPageRoute(builder: (_) => LoginScreen(),
             )
             , (route) => false
         );
