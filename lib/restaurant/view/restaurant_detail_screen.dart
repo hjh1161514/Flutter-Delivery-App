@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
+import 'package:flutter_delivery_app/product/component/product_card.dart';
 import 'package:flutter_delivery_app/restaurant/component/restaurant_card.dart';
 
 class RestaurantDetailScreen extends StatelessWidget {
@@ -22,6 +23,10 @@ class RestaurantDetailScreen extends StatelessWidget {
               isDetail: true,
               detail: '맛떡',
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ProductCard(),
+          )
         ],
       ),
     );
