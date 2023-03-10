@@ -37,6 +37,8 @@ class _SplashScreenState extends State<SplashScreen> {
           },
         ),
       );
+      
+      await storage.write(key: ACCESS_TOKEN_KEY, value: resp.data['accessToken']);
 
       // 에러가 없으면 정상적으로 rootTab 이동
       if (context.mounted) {
