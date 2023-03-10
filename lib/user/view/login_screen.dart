@@ -1,13 +1,11 @@
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/const/colors.dart';
 import 'package:flutter_delivery_app/common/const/data.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../common/component/custom_text_form_field.dart';
 import '../../common/view/root_tab.dart';
@@ -26,12 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final dio = Dio();
-
-    // localhost
-    final emulatorIp = '10.0.2.2:3000';
-    final simulatorIp = '127.0.0.1:3000';
-
-    final ip = Platform.isIOS ? simulatorIp : emulatorIp;
 
     return DefaultLayout(
         child: SingleChildScrollView( // 스크롤 가능하도록
@@ -110,16 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   TextButton(
                       onPressed: () async {
-                        final refreshToekn = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RAY29kZWZhY3RvcnkuYWkiLCJzdWIiOiJmNTViMzJkMi00ZDY4LTRjMWUtYTNjYS1kYTlkN2QwZDkyZTUiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTY3ODE2NTMwNSwiZXhwIjoxNjc4MjUxNzA1fQ.FeYQBPAvOVZQinItOASMUE2vfKkAGooqvGiWU6ETaSg';
-                        final resp = await dio.post('http://$ip/auth/token',
-                            options: Options(
-                              headers: {
-                                'authorization' : 'Bearer $refreshToekn',
-                              },
-                            )
-                        );
 
-                        print(resp.data);
                       },
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.black,
