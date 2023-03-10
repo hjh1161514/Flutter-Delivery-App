@@ -1,4 +1,8 @@
 // 3가지 값만 존재하니까 enum 사용
+import 'package:flutter/cupertino.dart';
+
+import '../../common/const/data.dart';
+
 enum RestaurantPriceRange {
   expensive,
   medium,
@@ -27,4 +31,22 @@ class RestaurantModel {
     required this.deliveryTime,
     required this.deliveryFee,
   });
+
+  factory RestaurantModel.fromJson({
+    required Map<String,
+        dynamic> json, // dart에서는 json값을 넣어줄 때 타입은 항상 Map<String,dynamic> json
+  }) {
+    return RestaurantModel(
+        id: json['id'],
+        name: json['name'],
+        thumbUrl: 'http://$ip${json['thumbUrl']}',
+        tags: List<String>.from(json['tags']),
+        priceRange: RestaurantPriceRange.values.firstWhere(
+        (e) => e.name == json['priceRange']
+        ),
+        ratings: json['ratings'],
+        ratingsCount: json['ratingsCount'],
+        deliveryTime: json['deliveryTime'],
+        deliveryFee: json['deliveryFee'],
+    );}
 }
