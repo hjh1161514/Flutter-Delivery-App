@@ -40,13 +40,9 @@ class RestaurantDetailModel extends RestaurantModel{
         detail: json['detail'],
         products: json['products'].map<RestaurantProductModel>( //<제너릭>을 넣지 않으면 dynamic으로 자동으로 설정.
             (x) =>
-                RestaurantProductModel(
-                    id: x['id'],
-                    name: x['name'],
-                    imgUrl: x['imgUrl'],
-                    detail: x['detail'],
-                    price: x['price'],
-                ),
+                RestaurantProductModel.json(
+                    json: x,
+                )
         ).toList(),
     );
   }
@@ -66,4 +62,17 @@ class RestaurantProductModel{
     required this.detail,
     required this.price,
   });
+
+  // fromJson - json으로부터 받음
+  factory RestaurantProductModel.json({
+    required  Map<String, dynamic> json,
+}) {
+    return RestaurantProductModel(
+      id: json['id'],
+      name: json['name'],
+      imgUrl: 'http://$ip${json['imgUrl']}',
+      detail: json['detail'],
+      price: json['price'],
+    );
+  }
 }
