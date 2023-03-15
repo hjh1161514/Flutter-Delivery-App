@@ -1,5 +1,6 @@
 // 3가지 값만 존재하니까 enum 사용
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_delivery_app/common/data_utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../common/const/data.dart';
@@ -23,7 +24,7 @@ class RestaurantModel {
   // 전환하는 방식을 변경하고 싶은 속성 위에 JsonKey 사용
   // JsonKey 후 명령어 재실행
   @JsonKey(
-    fromJson: pathToUrl, // fromJson이 실행될 때 실행하고 싶은 함수
+    fromJson: DataUtils.pathToUrl, // fromJson이 실행될 때 실행하고 싶은 함수
   )
   final String thumbUrl;
   final List<String> tags;
@@ -50,10 +51,6 @@ class RestaurantModel {
   => _$RestaurantModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$RestaurantModelToJson(this); // 현재 class를 instance로 넣어줌 = this
-
-  static pathToUrl(String value) { // static은 필수
-    return 'http://$ip$value';
-  }
 
   /// JsonSerializable로 .g파일을 만들면서 아래 코드가 .g 파일에서 실행되게 됨
   // factory RestaurantModel.fromJson({

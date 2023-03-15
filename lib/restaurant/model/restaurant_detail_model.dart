@@ -15,12 +15,6 @@ class RestaurantDetailModel extends RestaurantModel{
   RestaurantDetailModel({
     required super.id,
     required super.name,
-    // .g파일은 바꿀 수 없음.
-    // 전환하는 방식을 변경하고 싶은 속성 위에 JsonKey 사용
-    // JsonKey 후 명령어 재실행
-    @JsonKey(
-      fromJson: pathToUrl, // fromJson이 실행될 때 실행하고 싶은 함수
-    )
     required super.thumbUrl,
     required super.tags,
     required super.priceRange,
@@ -35,10 +29,6 @@ class RestaurantDetailModel extends RestaurantModel{
   // json으로부터 instance를 만듦
   factory  RestaurantDetailModel.fromJson(Map<String, dynamic> json)
   => _$RestaurantDetailModelFromJson(json);
-
-  static pathToUrl(String value) { // static은 필수
-    return 'http://$ip$value';
-  }
 }
 
 @JsonSerializable()
@@ -46,7 +36,7 @@ class RestaurantProductModel{
   final String id;
   final String name;
   @JsonKey(
-    fromJson: pathToUrl,
+    fromJson: DataUtils.pathToUrl,
   )
   final String imgUrl;
   final String detail;
@@ -62,8 +52,4 @@ class RestaurantProductModel{
 
   factory RestaurantProductModel.fromJson(Map<String, dynamic> json)
   => _$RestaurantProductModelFromJson(json);
-
-  static pathToUrl(String value) { // static은 필수
-    return 'http://$ip$value';
-  }
 }
