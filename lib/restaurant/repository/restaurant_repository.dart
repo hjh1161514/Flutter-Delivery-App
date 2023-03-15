@@ -18,7 +18,7 @@ abstract class RestaurantRepository { // repository 클래스는 무조건 abstr
   // http://$ip/restaurant/:id
   @GET('/{id}')
   @Headers({
-    'authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RAY29kZWZhY3RvcnkuYWkiLCJzdWIiOiJmNTViMzJkMi00ZDY4LTRjMWUtYTNjYS1kYTlkN2QwZDkyZTUiLCJ0eXBlIjoiYWNjZXNzIiwiaWF0IjoxNjc4ODU4MDI4LCJleHAiOjE2Nzg4NTgzMjh9.WfnwqagxJR0B_ETw5J0sVDrI02INUeozKBJLdfqYaYE'
+    'accessToken': 'true', // accessToken을 dio.dart에서 붙여서 요청을 보냄
   })
   Future<RestaurantDetailModel> getRestaurantDetail({
     @Path() required String id,
