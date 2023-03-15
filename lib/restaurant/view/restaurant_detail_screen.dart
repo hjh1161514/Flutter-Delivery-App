@@ -44,7 +44,7 @@ class RestaurantDetailScreen extends StatelessWidget {
           }
 
           final item = RestaurantDetailModel.fromJson(
-            json: snapshot.data!, //!를 넣어 무조건 존재한다는 것을 알려줌. 데이터가 없으면 Container로 반호나
+            snapshot.data!, //!를 넣어 무조건 존재한다는 것을 알려줌. 데이터가 없으면 Container로 반호나
           );
 
           return CustomScrollView( // 두 개의 스크롤 뷰를 하나의 스크롤이 되는 것처럼 하기 위해 사용

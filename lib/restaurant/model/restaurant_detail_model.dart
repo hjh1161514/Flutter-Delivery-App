@@ -1,8 +1,13 @@
+import 'package:flutter_delivery_app/common/data_utils.dart';
 import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '../../common/const/data.dart';
 
+part 'restaurant_detail_model.g.dart';
+
 // RestaurantModel에 있는 속성들을 중복으로 선언하지 않고 상속을 통해 값을 세팅
+@JsonSerializable()
 class RestaurantDetailModel extends RestaurantModel{
   final String detail;
   final List<RestaurantProductModel> products;
@@ -10,6 +15,12 @@ class RestaurantDetailModel extends RestaurantModel{
   RestaurantDetailModel({
     required super.id,
     required super.name,
+    // .g파일은 바꿀 수 없음.
+    // 전환하는 방식을 변경하고 싶은 속성 위에 JsonKey 사용
+    // JsonKey 후 명령어 재실행
+    @JsonKey(
+      fromJson: pathToUrl, // fromJson이 실행될 때 실행하고 싶은 함수
+    )
     required super.thumbUrl,
     required super.tags,
     required super.priceRange,
@@ -21,36 +32,22 @@ class RestaurantDetailModel extends RestaurantModel{
     required this.products
   });
 
-  // json을 넣기만 하면 자동으로 mapping이 되기 위해 factory를 만듦
-  factory RestaurantDetailModel.fromJson({
-    required Map<String, dynamic> json,
-  }) {
-    return RestaurantDetailModel(
-        id: json['id'],
-        name: json['name'],
-        thumbUrl: 'http://$ip${json['thumbUrl']}',
-        tags: List<String>.from(json['tags']),
-        priceRange: RestaurantPriceRange.values.firstWhere(
-                (e) => e.name == json['priceRange']
-        ),
-        ratings: json['ratings'],
-        ratingsCount: json['ratingsCount'],
-        deliveryTime: json['deliveryTime'],
-        deliveryFee: json['deliveryFee'],
-        detail: json['detail'],
-        products: json['products'].map<RestaurantProductModel>( //<제너릭>을 넣지 않으면 dynamic으로 자동으로 설정.
-            (x) =>
-                RestaurantProductModel.json(
-                    json: x,
-                )
-        ).toList(),
-    );
+  // json으로부터 instance를 만듦
+  factory  RestaurantDetailModel.fromJson(Map<String, dynamic> json)
+  => _$RestaurantDetailModelFromJson(json);
+
+  static pathToUrl(String value) { // static은 필수
+    return 'http://$ip$value';
   }
 }
 
+@JsonSerializable()
 class RestaurantProductModel{
   final String id;
   final String name;
+  @JsonKey(
+    fromJson: pathToUrl,
+  )
   final String imgUrl;
   final String detail;
   final int price;
@@ -63,16 +60,10 @@ class RestaurantProductModel{
     required this.price,
   });
 
-  // fromJson - json으로부터 받음
-  factory RestaurantProductModel.json({
-    required  Map<String, dynamic> json,
-}) {
-    return RestaurantProductModel(
-      id: json['id'],
-      name: json['name'],
-      imgUrl: 'http://$ip${json['imgUrl']}',
-      detail: json['detail'],
-      price: json['price'],
-    );
+  factory RestaurantProductModel.fromJson(Map<String, dynamic> json)
+  => _$RestaurantProductModelFromJson(json);
+
+  static pathToUrl(String value) { // static은 필수
+    return 'http://$ip$value';
   }
 }
