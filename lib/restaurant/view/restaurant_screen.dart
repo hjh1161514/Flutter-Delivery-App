@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_delivery_app/common/dio/dio.dart';
 import 'package:flutter_delivery_app/restaurant/component/restaurant_card.dart';
 import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
+import 'package:flutter_delivery_app/restaurant/repository/restaurant_repository.dart';
 import 'package:flutter_delivery_app/restaurant/view/restaurant_detail_screen.dart';
 
 import '../../common/const/data.dart';
@@ -9,21 +11,18 @@ import '../../common/const/data.dart';
 class RestaurantScreen extends StatelessWidget {
   const RestaurantScreen({Key? key}) : super(key: key);
 
-  Future<List> paginateRestaurant() async {
+  Future<List<RestaurantModel>> paginateRestaurant() async {
     final dio = Dio();
 
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
-
-    final resp = await dio.get(
-        'http://$ip/restaurant',
-        options: Options(
-            headers: {
-              'authorization': 'Bearer $accessToken'
-            }
-        )
+    dio.interceptors.add(
+      CustomInterceptor(storage: storage),
     );
 
-    return resp.data['data'];
+    //resp에 restaurantModel을 받을 수 있음
+    final resp = await RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant')
+    .paginate();
+
+    return resp.data;
   }
 
   @override
@@ -33,9 +32,9 @@ class RestaurantScreen extends StatelessWidget {
       child: Center(
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: FutureBuilder<List>(
+            child: FutureBuilder<List<RestaurantModel>>(
               future: paginateRestaurant(),
-              builder: (context, AsyncSnapshot<List> snapshot) {
+              builder: (context, AsyncSnapshot<List<RestaurantModel>> snapshot) {
                 if (!snapshot.hasData) {
                   return Center(
                     child: CircularProgressIndicator(),
@@ -44,10 +43,7 @@ class RestaurantScreen extends StatelessWidget {
 
                 return ListView.separated(
                     itemBuilder: (_, index) { // index를 받아서 각 item 렌더링
-                      final item = snapshot.data![index];
-
-                      // parsed
-                      final pItem = RestaurantModel.fromJson(json: item);
+                      final pItem = snapshot.data![index];
 
                       return GestureDetector(
                         onTap: () {

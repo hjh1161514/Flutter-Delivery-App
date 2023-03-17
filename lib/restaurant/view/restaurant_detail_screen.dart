@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/const/data.dart';
+import 'package:flutter_delivery_app/common/dio/dio.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
 import 'package:flutter_delivery_app/product/component/product_card.dart';
 import 'package:flutter_delivery_app/restaurant/component/restaurant_card.dart';
+import 'package:flutter_delivery_app/restaurant/repository/restaurant_repository.dart';
 
 import '../model/restaurant_detail_model.dart';
 
@@ -15,46 +17,47 @@ class RestaurantDetailScreen extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  Future <Map<String, dynamic>> getRestaurnatDetail() async {
+  Future <RestaurantDetailModel> getRestaurantDetail() async {
     final dio = Dio();
+    
+    dio.interceptors.add(
+      CustomInterceptor(
+        storage: storage
+      ),
+    );
 
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
+    final repository = RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
 
-    final resp = await dio.get('http://$ip/restaurant/$id', options: Options(
-      headers: {
-        'authorization' : 'Bearer $accessToken',
-      },
-    ));
-
-    return resp.data;
+    return repository.getRestaurantDetail(id: id);
   }
 
   @override
   Widget build(BuildContext context) {
     return DefaultLayout(
       title: '떡볶이',
-      child: FutureBuilder<Map<String,dynamic>> (
-        future: getRestaurnatDetail(),
-        builder: (_, AsyncSnapshot<Map<String, dynamic>> snapshot) {
-          print(snapshot.data);
+      child: FutureBuilder<RestaurantDetailModel> (
+        future: getRestaurantDetail(),
+        builder: (_, AsyncSnapshot<RestaurantDetailModel> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+
           if (!snapshot.hasData) {
             return Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          final item = RestaurantDetailModel.fromJson(
-            json: snapshot.data!, //!를 넣어 무조건 존재한다는 것을 알려줌. 데이터가 없으면 Container로 반호나
-          );
-
           return CustomScrollView( // 두 개의 스크롤 뷰를 하나의 스크롤이 되는 것처럼 하기 위해 사용
             slivers: [
               renderTop(
-                model: item,
+                model: snapshot.data!,
               ),
               renderLabel(),
               renderProducts(
-                products: item.products
+                products: snapshot.data!.products
               ),
             ],
           );
