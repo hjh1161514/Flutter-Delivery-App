@@ -31,7 +31,7 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
 
   // 실제 pagination을 진행하고 상태 안에다 응답 받은 리스트로 된 레스토랑 값을 넣음
   // 위젯에서는 상태를 바라보고 있다가 상태가 변경되면 새로운 값을 렌더링
-  paginate({
+  void paginate({
     //pagination_params에서 count와 같은 값
     int fetchCount = 20,
 
@@ -53,5 +53,19 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
     // 4) CursorPaginationRefetching - 첫번째 페이지부터 다시 데이터를 가져올 때
     // 5) CursorPaginationFetchMore - 추가 데이터를 paginate 해오라는 요청을 받았을 떄
 
+    // 바로 반환하는 상황
+    // 1) hasMore = false (기존 상태에서 이미 다음 데이터가 없다는 값을 들고 있다면)
+    // 2) 로딩 중 - fetchMore = true => 앱에서 맨 아래까지 스크롤하고 더 데이터를 가져오라고 하는 상황
+        // 추가 데이터를 가져와야 하는 상황에서 paginate 함수가 다시 실행된다면
+        // 갖고 있는 20개 데이터에서 다음 데이터가 들어오기 전에 똑같은 요청을 넣으면 똑같은 20개의 데이터를 가져옴
+    // 로딩중일 때 fetchMore가 아닐 떄는 실행. -> 기존 요청을 멈추고 새로운 데이터를 요청하는 거라고 생각 => 새로 고침의 의도가 있음
+    if(state is CursorPagination && !forceRefetch) { // pagination을 한 번 이상해서 이미 데이터가 있음
+      // 아직 dart에서 state.을 바로 사용할 수 없어서 CursorPagination이라는 것을 한 번 더 명시
+      final pState = state as CursorPagination;
+
+      if (!pState.meta.hasMore) { // 더 데이터가 없으면
+        return;
+      }
+    }
   }
 }
