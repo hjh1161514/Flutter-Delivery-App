@@ -1,5 +1,6 @@
 
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
+import 'package:flutter_delivery_app/common/model/pagination_params.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repository/restaurant_repository.dart';
@@ -53,10 +54,10 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
     // 4) CursorPaginationRefetching - 첫번째 페이지부터 다시 데이터를 가져올 때
     // 5) CursorPaginationFetchMore - 추가 데이터를 paginate 해오라는 요청을 받았을 떄
 
-
-    // 바로 반환하는 상황
-    // 1) hasMore = false (기존 상태에서 이미 다음 데이터가 없다는 값을 들고 있다면)
-    // 2) 로딩 중 - fetchMore = true => 앱에서 맨 아래까지 스크롤하고 더 데이터를 가져오라고 하는 상황
+    // =====
+    //  바로 반환하는 상황
+    // (1) hasMore = false (기존 상태에서 이미 다음 데이터가 없다는 값을 들고 있다면)
+    // (2) 로딩 중 - fetchMore = true => 앱에서 맨 아래까지 스크롤하고 더 데이터를 가져오라고 하는 상황
         // 추가 데이터를 가져와야 하는 상황에서 paginate 함수가 다시 실행된다면
         // 갖고 있는 20개 데이터에서 다음 데이터가 들어오기 전에 똑같은 요청을 넣으면 똑같은 20개의 데이터를 가져옴
 
@@ -78,6 +79,48 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
 
     if(fetchMore && (isLoading || isRefetching || isFetchingMore)) {
       return;
+    }
+
+    // =====
+    // 아무런 값이 없으면 서버에서 오는 값(20)으로 지정
+    // PaginationParams 생성
+    PaginationParams paginationParams = PaginationParams(
+      count: fetchCount,
+    );
+
+    // fetchMore 상황
+    // 데이터를 추가로 더 가져오는 상황
+    if (fetchMore) {
+      final pState = state as CursorPagination; // fetchMore을 실행할 수 있는 상황 = 화면에 데이터가 보여지는 상황
+
+      // 데이터를 유지한 채로 class 이름만 변경
+      state = CursorPaginationFetchingMore(
+          meta: pState.meta,
+          data: pState.data,
+      );
+
+      paginationParams = paginationParams.copyWith(
+        after: pState.data.last.id,
+      );
+    }
+
+    // 로딩이 돌아가는 순간 요청을 넣어야 함
+    // 가장 최근 데이터 (20)개
+    final resp = await repository.paginate(
+      paginationParams: paginationParams,
+    );
+
+    if (state is CursorPaginationFetchingMore) {
+      final pState = state as CursorPaginationFetchingMore;
+
+      // 응답이 다 왔기 때문에 로딩 상태를 로딩이 끝난 상태로 변경
+      state = resp.copyWith(
+        // 기존 데이터에 새로운 데이터 추가
+        data: [
+          ...pState.data, // 기존
+          ...resp.data, // 새로운
+        ]
+      );
     }
   }
 }
