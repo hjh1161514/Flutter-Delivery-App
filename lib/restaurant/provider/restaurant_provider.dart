@@ -1,6 +1,5 @@
 
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
-import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repository/restaurant_repository.dart';
@@ -32,11 +31,27 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
 
   // 실제 pagination을 진행하고 상태 안에다 응답 받은 리스트로 된 레스토랑 값을 넣음
   // 위젯에서는 상태를 바라보고 있다가 상태가 변경되면 새로운 값을 렌더링
-  paginate() async{
-    final resp = await repository.paginate();
+  paginate({
+    //pagination_params에서 count와 같은 값
+    int fetchCount = 20,
 
-    state = resp;
-    // -> paginate를 실행해서 상태를 가져와서 state에 집어 넣음
-    // home 화면에서 watch를 하고 있기 때문에 변경될 때마다 홈 화면이 렌더링
+    // 추가로 데이터 더 가져오기
+    // true - 추가로 데이터 더 가져옴
+    // false - 새로고침. 첫번째 데이터를 다시 가져와서 현재 상태를 덮어씌움 - 데이터를 유지하면서 새로고침
+    bool fetchMore = false,
+
+    // 강제로 다시 로딩하기
+    // true - CursorPaginationLoading() - 화면에 데이터가 모두 지워지고 가운데에서 로딩 effect
+    bool forceRefetch = false,
+}) async{
+    // 5가지 가능성
+    // State의 상태 -> CursorPaginationBase를 extends하는 class가 5개
+    // [상태가]
+    // 1) CursorPagination - 정상적으로 데이터가 있는 상태
+    // 2) CursorPaginationLoading = 데이터가 로딩 중인 상태 (현재 캐시 없음) => forceRefetch = true
+    // 3) CursorPaginationError - 에러가 있는 상태
+    // 4) CursorPaginationRefetching - 첫번째 페이지부터 다시 데이터를 가져올 때
+    // 5) CursorPaginationFetchMore - 추가 데이터를 paginate 해오라는 요청을 받았을 떄
+
   }
 }

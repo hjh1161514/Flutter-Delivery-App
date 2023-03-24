@@ -38,6 +38,7 @@ abstract class RestaurantRepository { // repository 클래스는 무조건 abstr
   // 그러나 특정 커서의 다음 값들을 가져오려면 cursor값 필수
   // -> null 가능
   Future<CursorPagination<RestaurantModel>> paginate({
+    // repository에서 query 추가 방법?
     // @Queries를 통해 query parameter로 변경
     // class가 자동으로 query로 변경됨
     @Queries() PaginationParams? paginationParams = const PaginationParams(),
