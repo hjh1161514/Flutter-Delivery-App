@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_delivery_app/common/dio/dio.dart';
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
+import 'package:flutter_delivery_app/common/model/pagination_params.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrofit/retrofit.dart';
 import '../../common/const/data.dart';
@@ -33,7 +34,14 @@ abstract class RestaurantRepository { // repository 클래스는 무조건 abstr
     'accessToken': 'true',
   })
   // pagination 관련
-  Future<CursorPagination<RestaurantModel>> paginate();
+  // 첫페이지는 after,count가 없어도 괜찮도록 서버 설계
+  // 그러나 특정 커서의 다음 값들을 가져오려면 cursor값 필수
+  // -> null 가능
+  Future<CursorPagination<RestaurantModel>> paginate({
+    // @Queries를 통해 query parameter로 변경
+    // class가 자동으로 query로 변경됨
+    @Queries() PaginationParams? paginationParams = const PaginationParams(),
+  });
 
   // http://$ip/restaurant/:id
   @GET('/{id}')

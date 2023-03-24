@@ -6,6 +6,7 @@ part 'cursor_pagination_model.g.dart';
 
 // class로 상태를 구분하기 위해서는 base class를 생성
 // class 안에 값의 여부는 중요하지 않음. 상태 구분만 가능하면 됨
+// -> 부모 클래스로 존재한다. 의미가 끝
 abstract class CursorPaginationBase {}
 
 // 에러가 났을 때 상태
@@ -62,7 +63,7 @@ class CursorPaginationMeta{
 // 새로고침할 때 다시 처음부터 불러오기. ex) 리스트에서 아래로 당기면 새로 로딩이 되는 것
 // meta, data가 존재할 때 사용하기 때문에 CursorPagination extends
 // CursorPaginationBase까지 extends
-class CursorPaginationRefetching extends CursorPagination{
+class CursorPaginationRefetching<T> extends CursorPagination<T>{
   CursorPaginationRefetching({
     required super.meta,
     required super.data,
@@ -70,7 +71,7 @@ class CursorPaginationRefetching extends CursorPagination{
 }
 
 // 리스트의 맨 아래로 내려서 추가 데이터를 요청하는 중
-class CursorPaginationFetchingMore extends CursorPagination{
+class CursorPaginationFetchingMore<T> extends CursorPagination<T>{
   CursorPaginationFetchingMore({
     required super.meta,
     required super.data,
