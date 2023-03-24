@@ -6,10 +6,11 @@ import 'package:flutter_delivery_app/common/layout/default_layout.dart';
 import 'package:flutter_delivery_app/product/component/product_card.dart';
 import 'package:flutter_delivery_app/restaurant/component/restaurant_card.dart';
 import 'package:flutter_delivery_app/restaurant/repository/restaurant_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../model/restaurant_detail_model.dart';
 
-class RestaurantDetailScreen extends StatelessWidget {
+class RestaurantDetailScreen extends ConsumerWidget {
   final String id;
 
   const RestaurantDetailScreen({
@@ -17,14 +18,10 @@ class RestaurantDetailScreen extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
-  Future <RestaurantDetailModel> getRestaurantDetail() async {
-    final dio = Dio();
-    
-    dio.interceptors.add(
-      CustomInterceptor(
-        storage: storage
-      ),
-    );
+  Future <RestaurantDetailModel> getRestaurantDetail(WidgetRef ref) async {
+    // dio는 어디에서 불러와도 dioProvider를 반환받으면 무조건 dioProvider에서 앱이 빌드되었을 떄
+    // 맨 처음 한 번 생성된 항상 똑같은 인스턴스의 dio (customInterceptor)적용
+    final dio = ref.watch(dioProvider);
 
     final repository = RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
 
@@ -32,11 +29,11 @@ class RestaurantDetailScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DefaultLayout(
       title: '떡볶이',
       child: FutureBuilder<RestaurantDetailModel> (
-        future: getRestaurantDetail(),
+        future: getRestaurantDetail(ref),
         builder: (_, AsyncSnapshot<RestaurantDetailModel> snapshot) {
           if (snapshot.hasError) {
             return Center(
