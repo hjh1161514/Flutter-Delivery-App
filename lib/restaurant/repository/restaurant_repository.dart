@@ -1,10 +1,25 @@
 import 'package:dio/dio.dart' hide Headers;
+import 'package:flutter_delivery_app/common/dio/dio.dart';
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrofit/retrofit.dart';
+import '../../common/const/data.dart';
 import '../model/restaurant_detail_model.dart';
 import '../model/restaurant_model.dart';
 
 part 'restaurant_repository.g.dart';
+
+final restaurantRepositoryProvider = Provider<RestaurantRepository>(
+    (ref) {
+      // dio는 dioProvider에 저장
+      // watch? (가능성이 적지만) 만약 dioProvider 안에서 값이 변경된다면 restaurantRepositoryProvider를 다시 build하기 위해서
+      final dio = ref.watch(dioProvider);
+      
+      final repository = RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant');
+
+      return repository;
+    }
+);
 
 @RestApi()
 abstract class RestaurantRepository { // repository 클래스는 무조건 abstract로 선언
