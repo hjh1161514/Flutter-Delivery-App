@@ -1,19 +1,32 @@
 
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
 import 'package:flutter_delivery_app/common/model/pagination_params.dart';
+import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../repository/restaurant_repository.dart';
 
+// restaurantProvider 상태에 반응을 해서 상태 안에서 데이터 값을 불러옴
+final restaurantDetailProvider = Provider.family<RestaurantModel?, String>((ref, id) { // 프로바이더를 생성할 때 id값을 넣어줌
+  final state = ref.watch(restaurantProvider);
+
+  if (state is! CursorPagination<RestaurantModel>) {
+    // CursorPagination이 아니라는 것은 데이터가 없다는 뜻 => 그냥 return
+    return null;
+  }
+
+  return state.data.firstWhere((element) => element.id == id); // id에 해당하는 restaurant를 반환
+});
+
 // provider 안에 넣기
 // stateNotifier를 넣기 위해 StateNotifierProvider 사용
 final restaurantProvider = StateNotifierProvider<RestaurantStateNotifier, CursorPaginationBase>(
-   (ref) {
-     final repository = ref.watch(restaurantRepositoryProvider);
-     final notifier = RestaurantStateNotifier(repository: repository);
+      (ref) {
+    final repository = ref.watch(restaurantRepositoryProvider);
+    final notifier = RestaurantStateNotifier(repository: repository);
 
-     return notifier;
-   },
+    return notifier;
+  },
 );
 
 // <CursorPagination>? => 다음 페이지를 불러올 때 CursorPagination에 들어온 meta, hasMore을 가지고 더 있으면 요청을 추가할 수 있음
@@ -44,7 +57,7 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
     // 강제로 다시 로딩하기
     // true - CursorPaginationLoading() - 화면에 데이터가 모두 지워지고 가운데에서 로딩 effect
     bool forceRefetch = false,
-}) async{
+  }) async{
     try{
       // 5가지 가능성
       // State의 상태 -> CursorPaginationBase를 extends하는 class가 5개
