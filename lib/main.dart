@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/component/custom_text_form_field.dart';
 import 'package:flutter_delivery_app/common/view/splash_screen.dart';
 import 'package:flutter_delivery_app/user/view/login_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(_App());
+  runApp(
+    // provider 사용을 위해 ProviderScope 사용
+      ProviderScope(child: _App())
+  );
 }
 
 class _App extends StatelessWidget {
