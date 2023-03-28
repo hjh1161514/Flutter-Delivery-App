@@ -69,6 +69,16 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
         child: ListView.separated(
           controller: controller,
             itemBuilder: (_, index) { // index를 받아서 각 item 렌더링
+              // index가 마지막이면
+              // 마지막 아이템에서 로딩 보여줌
+              if (index == cp.data.length) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Center(
+                    child: data is CursorPaginationFetchingMore? CircularProgressIndicator() : Text("마지막 데이터입니다."),
+                  ),
+                );
+              }
               final pItem = cp.data[index];
 
               return GestureDetector(
@@ -89,7 +99,7 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
             separatorBuilder: (_, index) { // 각각 아이템 사이사이 빌드
               return SizedBox(height: 16.0);
             },
-            itemCount: cp.data.length // 아이템 갯수
+            itemCount: cp.data.length + 1 // 아이템 갯수
         )
     );
   }
