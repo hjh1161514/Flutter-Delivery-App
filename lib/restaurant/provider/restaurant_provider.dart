@@ -1,4 +1,6 @@
 
+import 'dart:ui';
+
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
 import 'package:flutter_delivery_app/common/model/pagination_params.dart';
 import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
@@ -7,10 +9,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../repository/restaurant_repository.dart';
 
 // restaurantProvider 상태에 반응을 해서 상태 안에서 데이터 값을 불러옴
+// 단순하게 restaurantModel 반환
+// restaurantProvider를 watch하고 있어서 restaurantProvider서 상태가 변경되면 detailProvider도 재빌드
 final restaurantDetailProvider = Provider.family<RestaurantModel?, String>((ref, id) { // 프로바이더를 생성할 때 id값을 넣어줌
   final state = ref.watch(restaurantProvider);
 
-  if (state is! CursorPagination<RestaurantModel>) {
+  if (state is! CursorPagination) {
     // CursorPagination이 아니라는 것은 데이터가 없다는 뜻 => 그냥 return
     return null;
   }
@@ -45,7 +49,7 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
 
   // 실제 pagination을 진행하고 상태 안에다 응답 받은 리스트로 된 레스토랑 값을 넣음
   // 위젯에서는 상태를 바라보고 있다가 상태가 변경되면 새로운 값을 렌더링
-  void paginate({
+  Future<void> paginate({
     //pagination_params에서 count와 같은 값
     int fetchCount = 20,
 
@@ -161,5 +165,34 @@ class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
     }catch(e) {
       state = CursorPaginationError(message: "데이터를 가져오지 못했습니다.");
     }
+  }
+
+  void getDetail({
+    required String id,
+  }) async {
+   // 만약에 아직 데이터가 하나도 없는 상태라면 (CursorPagination이 아니라면)
+   // 데이터를 가져오는 시도를 한다
+   if (state is! CursorPagination) {
+     await this.paginate();
+   }
+
+   // pagination을 했는데도 state가 CursorPagination이 아닐 떄 그냥 리턴
+    if (state is! CursorPagination) {
+      return;
+    }
+
+    final pState = state as CursorPagination;
+    
+    final resp = await repository.getRestaurantDetail(id: id);
+
+    // [RestaurantModel(1), RestaurantModel(2), RestaurantModel(3)]
+   // id: 2인 친구들 Detail 모델을 가져와라
+   // getDetail(id:2);
+   // [RestaurantModel(1), RestaurantDetailModel(2), RestaurantModel(3)]
+   state = pState.copyWith(
+      // 특정 e의 id와 상세정보로 가져오려고 하는 id값이 같으면 element를 resp로 변경
+      // => 요청을 한 데이터만 restaurantDetail로 변경
+      data: pState.data.map<RestaurantModel>((e) => e.id == id ? resp : e).toList(),
+    );
   }
 }
