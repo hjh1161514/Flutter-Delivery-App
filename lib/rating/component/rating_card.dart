@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/const/colors.dart';
+import 'package:collection/collection.dart';
 
 class RatingCard extends StatelessWidget {
   // NetworkImage나 AssetImage으로 CircleAvatar 타입이 ImageProvider
@@ -32,7 +33,13 @@ class RatingCard extends StatelessWidget {
         _Body(
           content: content,
         ),
-        _Images(),
+        if(images.length > 0)
+        SizedBox(
+          height: 100,
+          child: _Images(
+            images: images,
+          ),
+        ),
       ],
     );
   }
@@ -107,11 +114,28 @@ class _Body extends StatelessWidget {
 }
 
 class _Images extends StatelessWidget {
-  const _Images({Key? key}) : super(key: key);
+  final List<Image> images;
+
+  const _Images({
+    required this.images,
+    Key? key
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return ListView(
+      scrollDirection: Axis.horizontal, // 좌우 스크롤
+      // 5개 이상의 이미지가 들어갈 수 없기 떄문에 기본 constructor 사용
+      children: images.mapIndexed(
+        (index, element) => Padding(
+          padding: EdgeInsets.only(right: index == images.length -1 ? 0 : 16), // 가장 마지막 카드에서는 padding이 없도록
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: element,
+          ),
+        )
+      ).toList()
+    );
   }
 }
 
