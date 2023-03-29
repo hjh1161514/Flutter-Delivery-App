@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
 import 'package:flutter_delivery_app/product/component/product_card.dart';
 import 'package:flutter_delivery_app/restaurant/component/restaurant_card.dart';
+import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
+import 'package:flutter_delivery_app/restaurant/provider/restaurant_provider.dart';
 import 'package:flutter_delivery_app/restaurant/repository/restaurant_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletons/skeletons.dart';
 
 import '../model/restaurant_detail_model.dart';
 
-class RestaurantDetailScreen extends ConsumerWidget {
+class RestaurantDetailScreen extends ConsumerStatefulWidget {
   final String id;
 
   const RestaurantDetailScreen({
@@ -16,39 +19,72 @@ class RestaurantDetailScreen extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RestaurantDetailScreen> createState() => _RestaurantDetailScreenState();
+}
+
+class _RestaurantDetailScreenState extends ConsumerState<RestaurantDetailScreen> {
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // 상세 정보를 가져옴
+    ref.read(restaurantProvider.notifier).getDetail(id: widget.id);
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(restaurantDetailProvider(widget.id));
+
+    if (state == null) {
+      return DefaultLayout(
+          child: Center(
+            child: CircularProgressIndicator(),
+          )
+      );
+    }
+
     return DefaultLayout(
-      title: '떡볶이',
-      child: FutureBuilder<RestaurantDetailModel> (
-        future: ref.watch(restaurantRepositoryProvider).getRestaurantDetail(
-          id: id,
-        ),
-        builder: (_, AsyncSnapshot<RestaurantDetailModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          return CustomScrollView( // 두 개의 스크롤 뷰를 하나의 스크롤이 되는 것처럼 하기 위해 사용
-            slivers: [
-              renderTop(
-                model: snapshot.data!,
-              ),
-              renderLabel(),
+        title: '떡볶이',
+        child: CustomScrollView( // 두 개의 스크롤 뷰를 하나의 스크롤이 되는 것처럼 하기 위해 사용
+          slivers: [
+            renderTop(
+              model: state,
+            ),
+            if (state is! RestaurantDetailModel) renderLoading(),
+            if (state is RestaurantDetailModel)
+            renderLabel(),
+            if (state is RestaurantDetailModel)
               renderProducts(
-                products: snapshot.data!.products
+                products: state.products
               ),
-            ],
-          );
-        },
-      )
+          ],
+        )
+    );
+  }
+
+  SliverPadding renderLoading() {
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(
+        vertical: 16.0,
+        horizontal: 16.0,
+      ),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate(
+          List.generate(
+              3,
+              (index) => Padding(
+                padding: const EdgeInsets.only(bottom: 32.0),
+                child: SkeletonParagraph(
+                  style: SkeletonParagraphStyle(
+                    lines: 5,
+                    padding: EdgeInsets.zero, // skeleton 자체 padding 제거
+                  ),
+                ),
+              )
+          ),
+        ),
+      ),
     );
   }
 
@@ -69,22 +105,22 @@ class RestaurantDetailScreen extends ConsumerWidget {
 
   SliverPadding renderProducts({
     required List<RestaurantProductModel> products
-}) {
+  }) {
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 16.0),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              // model을 가져오는 방법
-              final model = products[index];
+              (context, index) {
+            // model을 가져오는 방법
+            final model = products[index];
 
-              return Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: ProductCard.fromModel(
-                    model: model,
-                ),
-              );
-            },
+            return Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: ProductCard.fromModel(
+                model: model,
+              ),
+            );
+          },
           childCount: products.length,
         ),
       ),
@@ -92,8 +128,8 @@ class RestaurantDetailScreen extends ConsumerWidget {
   }
 
   SliverToBoxAdapter renderTop({
-    required RestaurantDetailModel model,
-}) {
+    required RestaurantModel model,
+  }) {
     return SliverToBoxAdapter( // 일반 위젯을 넣기 위해 사용
       child: RestaurantCard.fromModel(
         model: model,
