@@ -1,4 +1,5 @@
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
+import 'package:flutter_delivery_app/common/model/model_with_id.dart';
 import 'package:flutter_delivery_app/common/repository/base_pagination_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,7 +7,9 @@ import '../model/pagination_params.dart';
 
 // dart 언어에서는 제너릭에 implements를 사용할 수 없음
 // -> extends 사용
-class PaginationProvider<U extends IBasePaginationRepository> extends StateNotifier<CursorPaginationBase> {
+class PaginationProvider<
+  T extends IModelWithId, // pagination에서 가져오는 값들의 실제 데이터 타입
+  U extends IBasePaginationRepository<T>> extends StateNotifier<CursorPaginationBase> {
   // repository를 넘겨받기 위해
   // RestaurantRepository와 RestaurantRatingRepository가 따로 존재
   // -> 이를 하나로 묶기 위해 IBasePaginationRepository 생성
@@ -80,16 +83,17 @@ class PaginationProvider<U extends IBasePaginationRepository> extends StateNotif
       // fetchMore 상황
       // 데이터를 추가로 더 가져오는 상황
       if (fetchMore) {
-        final pState = state as CursorPagination; // fetchMore을 실행할 수 있는 상황 = 화면에 데이터가 보여지는 상황
+        final pState = state as CursorPagination<T>; // fetchMore을 실행할 수 있는 상황 = 화면에 데이터가 보여지는 상황
 
         // 데이터를 유지한 채로 class 이름만 변경
+        // <>이 없다 -> dynamic으로 취급 -> dynamic을 줄이는 것이 좋음
         state = CursorPaginationFetchingMore(
           meta: pState.meta,
           data: pState.data,
         );
 
         paginationParams = paginationParams.copyWith(
-          after: pState.data.last.id,
+          after: pState.data.last.id, // CursorPagination<T>이기 때문에 id가 무조건 존재
         );
       }
       // ===
@@ -98,10 +102,10 @@ class PaginationProvider<U extends IBasePaginationRepository> extends StateNotif
         // 만약에 데이터가 있는 상황이라면
         // 기존 데이터를 보존한 채로 Fetch (API 요청)를 진행
         if (state is CursorPagination && !forceRefetch) {
-          final pState = state as CursorPagination;
+          final pState = state as CursorPagination<T>;
 
           // 데이터를 유지하다가 새로운 데이터가 오면 대체
-          state = CursorPaginationRefetching(
+          state = CursorPaginationRefetching<T>(
             meta: pState.meta,
             data: pState.data,
           );
@@ -119,7 +123,7 @@ class PaginationProvider<U extends IBasePaginationRepository> extends StateNotif
       );
 
       if (state is CursorPaginationFetchingMore) {
-        final pState = state as CursorPaginationFetchingMore;
+        final pState = state as CursorPaginationFetchingMore<T>;
 
         // 응답이 다 왔기 때문에 로딩 상태를 로딩이 끝난 상태로 변경
         state = resp.copyWith(
