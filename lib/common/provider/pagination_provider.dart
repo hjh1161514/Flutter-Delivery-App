@@ -17,9 +17,12 @@ class PaginationProvider<
 
   PaginationProvider({
     required this.repository
-  }) :
-        super(CursorPaginationLoading());
-
+  }) :super(CursorPaginationLoading()) { // 처음에는 로딩 상태가 필요
+    // 클래스가 생성되면 pagination을 바로 요청 <- 가지고 와서 데이터를 기억하고 있으면 되기 때문
+    // class가 인스턴스화 될 때 pagination을 실행
+    /// RestaurantStateNotifier가 생성되는 순간 pagination 실행
+    paginate();
+  }
   // 실제 pagination을 진행하고 상태 안에다 응답 받은 리스트로 된 레스토랑 값을 넣음
   // 위젯에서는 상태를 바라보고 있다가 상태가 변경되면 새로운 값을 렌더링
   Future<void> paginate({
@@ -137,7 +140,9 @@ class PaginationProvider<
         // resp는 맨처음 데이터라서
         state = resp;
       }
-    } catch (e) {
+    } catch (e, stack) {
+      print(e);
+      print(stack);
       state = CursorPaginationError(message: "데이터를 가져오지 못했습니다.");
     }
   }

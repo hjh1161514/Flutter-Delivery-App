@@ -6,6 +6,7 @@ import 'package:flutter_delivery_app/common/model/pagination_params.dart';
 import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../common/provider/pagination_provider.dart';
 import '../repository/restaurant_repository.dart';
 
 // restaurantProvider 상태에 반응을 해서 상태 안에서 데이터 값을 불러옴
@@ -35,17 +36,14 @@ final restaurantProvider = StateNotifierProvider<RestaurantStateNotifier, Cursor
 
 // <CursorPagination>? => 다음 페이지를 불러올 때 CursorPagination에 들어온 meta, hasMore을 가지고 더 있으면 요청을 추가할 수 있음
 // <CursorPaginationBase>를 사용함으로써 자식인 class 모두 사용 가능해짐
-class RestaurantStateNotifier extends StateNotifier<CursorPaginationBase> {
-  final RestaurantRepository repository;
+class RestaurantStateNotifier
+    extends PaginationProvider<RestaurantModel, RestaurantRepository> {
+  // extends를 통해 super 클래스에 들어가니까 repository 필요 없음
+  // final RestaurantRepository repository;
 
   RestaurantStateNotifier({
-    required this.repository,
-  }): super(CursorPaginationLoading()) { // 처음에는 로딩 상태가 필요
-    // 클래스가 생성되면 pagination을 바로 요청 <- 가지고 와서 데이터를 기억하고 있으면 되기 때문
-    // class가 인스턴스화 될 때 pagination을 실행
-    /// RestaurantStateNotifier가 생성되는 순간 pagination 실행
-    paginate();
-  }
+    required super.repository,
+  });
 
   // 실제 pagination을 진행하고 상태 안에다 응답 받은 리스트로 된 레스토랑 값을 넣음
   // 위젯에서는 상태를 바라보고 있다가 상태가 변경되면 새로운 값을 렌더링

@@ -5,6 +5,7 @@ import 'package:flutter_delivery_app/rating/component/rating_card.dart';
 import 'package:flutter_delivery_app/restaurant/component/restaurant_card.dart';
 import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
 import 'package:flutter_delivery_app/restaurant/provider/restaurant_provider.dart';
+import 'package:flutter_delivery_app/restaurant/provider/restaurant_rating_provider.dart';
 import 'package:flutter_delivery_app/restaurant/repository/restaurant_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletons/skeletons.dart';
@@ -36,6 +37,9 @@ class _RestaurantDetailScreenState extends ConsumerState<RestaurantDetailScreen>
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(restaurantDetailProvider(widget.id));
+    final ratingsState = ref.watch(restaurantRatingProvider(widget.id));
+
+    print(ratingsState);
 
     if (state == null) {
       return DefaultLayout(
