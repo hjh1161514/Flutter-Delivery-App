@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_delivery_app/common/layout/default_layout.dart';
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
+import 'package:flutter_delivery_app/common/utils/pagination_utils.dart';
 import 'package:flutter_delivery_app/product/component/product_card.dart';
 import 'package:flutter_delivery_app/rating/component/rating_card.dart';
 import 'package:flutter_delivery_app/restaurant/component/restaurant_card.dart';
@@ -27,13 +28,23 @@ class RestaurantDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _RestaurantDetailScreenState extends ConsumerState<RestaurantDetailScreen> {
-  
+  final ScrollController controller = ScrollController();
+
   @override
   void initState() {
     super.initState();
     
     // 상세 정보를 가져옴
     ref.read(restaurantProvider.notifier).getDetail(id: widget.id);
+
+    controller.addListener(listener);
+  }
+  
+  void listener() {
+    PaginationUtils.paginate(
+        controller: controller, 
+        provider: ref.read(restaurantRatingProvider(widget.id).notifier)
+    );
   }
   
   @override
@@ -52,6 +63,7 @@ class _RestaurantDetailScreenState extends ConsumerState<RestaurantDetailScreen>
     return DefaultLayout(
         title: '떡볶이',
         child: CustomScrollView( // 두 개의 스크롤 뷰를 하나의 스크롤이 되는 것처럼 하기 위해 사용
+          controller: controller,
           slivers: [
             renderTop(
               model: state,

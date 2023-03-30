@@ -1,4 +1,4 @@
-import 'const/data.dart';
+import '../const/data.dart';
 
 class DataUtils{
   static String pathToUrl(String value) { // static은 필수

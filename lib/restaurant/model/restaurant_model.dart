@@ -1,6 +1,6 @@
 // 3가지 값만 존재하니까 enum 사용
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_delivery_app/common/data_utils.dart';
+import 'package:flutter_delivery_app/common/utils/data_utils.dart';
 import 'package:flutter_delivery_app/common/model/model_with_id.dart';
 import 'package:json_annotation/json_annotation.dart';
 

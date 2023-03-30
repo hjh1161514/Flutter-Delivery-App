@@ -44,7 +44,10 @@ class RatingCard extends StatelessWidget {
           email: email,
           rating: rating,
         ),
-        const SizedBox(height: 8.0,),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: const SizedBox(height: 8.0,),
+        ),
         _Body(
           content: content,
         ),
