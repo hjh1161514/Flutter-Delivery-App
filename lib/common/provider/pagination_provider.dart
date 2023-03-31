@@ -1,50 +1,28 @@
-
-import 'dart:ui';
-
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
-import 'package:flutter_delivery_app/common/model/pagination_params.dart';
-import 'package:flutter_delivery_app/restaurant/model/restaurant_model.dart';
+import 'package:flutter_delivery_app/common/model/model_with_id.dart';
+import 'package:flutter_delivery_app/common/repository/base_pagination_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../common/provider/pagination_provider.dart';
-import '../repository/restaurant_repository.dart';
+import '../model/pagination_params.dart';
 
-// restaurantProvider 상태에 반응을 해서 상태 안에서 데이터 값을 불러옴
-// 단순하게 restaurantModel 반환
-// restaurantProvider를 watch하고 있어서 restaurantProvider서 상태가 변경되면 detailProvider도 재빌드
-final restaurantDetailProvider = Provider.family<RestaurantModel?, String>((ref, id) { // 프로바이더를 생성할 때 id값을 넣어줌
-  final state = ref.watch(restaurantProvider);
+// dart 언어에서는 제너릭에 implements를 사용할 수 없음
+// -> extends 사용
+class PaginationProvider<
+  T extends IModelWithId, // pagination에서 가져오는 값들의 실제 데이터 타입
+  U extends IBasePaginationRepository<T>> extends StateNotifier<CursorPaginationBase> {
+  // repository를 넘겨받기 위해
+  // RestaurantRepository와 RestaurantRatingRepository가 따로 존재
+  // -> 이를 하나로 묶기 위해 IBasePaginationRepository 생성
+  final U repository;
 
-  if (state is! CursorPagination) {
-    // CursorPagination이 아니라는 것은 데이터가 없다는 뜻 => 그냥 return
-    return null;
+  PaginationProvider({
+    required this.repository
+  }) :super(CursorPaginationLoading()) { // 처음에는 로딩 상태가 필요
+    // 클래스가 생성되면 pagination을 바로 요청 <- 가지고 와서 데이터를 기억하고 있으면 되기 때문
+    // class가 인스턴스화 될 때 pagination을 실행
+    /// RestaurantStateNotifier가 생성되는 순간 pagination 실행
+    paginate();
   }
-
-  return state.data.firstWhere((element) => element.id == id); // id에 해당하는 restaurant를 반환
-});
-
-// provider 안에 넣기
-// stateNotifier를 넣기 위해 StateNotifierProvider 사용
-final restaurantProvider = StateNotifierProvider<RestaurantStateNotifier, CursorPaginationBase>(
-      (ref) {
-    final repository = ref.watch(restaurantRepositoryProvider);
-    final notifier = RestaurantStateNotifier(repository: repository);
-
-    return notifier;
-  },
-);
-
-// <CursorPagination>? => 다음 페이지를 불러올 때 CursorPagination에 들어온 meta, hasMore을 가지고 더 있으면 요청을 추가할 수 있음
-// <CursorPaginationBase>를 사용함으로써 자식인 class 모두 사용 가능해짐
-class RestaurantStateNotifier
-    extends PaginationProvider<RestaurantModel, RestaurantRepository> {
-  // extends를 통해 super 클래스에 들어가니까 repository 필요 없음
-  // final RestaurantRepository repository;
-
-  RestaurantStateNotifier({
-    required super.repository,
-  });
-
   // 실제 pagination을 진행하고 상태 안에다 응답 받은 리스트로 된 레스토랑 값을 넣음
   // 위젯에서는 상태를 바라보고 있다가 상태가 변경되면 새로운 값을 렌더링
   Future<void> paginate({
@@ -59,8 +37,8 @@ class RestaurantStateNotifier
     // 강제로 다시 로딩하기
     // true - CursorPaginationLoading() - 화면에 데이터가 모두 지워지고 가운데에서 로딩 effect
     bool forceRefetch = false,
-  }) async{
-    try{
+  }) async {
+    try {
       // 5가지 가능성
       // State의 상태 -> CursorPaginationBase를 extends하는 class가 5개
       // [상태가]
@@ -79,7 +57,8 @@ class RestaurantStateNotifier
 
       // (1)
       // 로딩중일 때 fetchMore가 아닐 때는 실행. -> 기존 요청을 멈추고 새로운 데이터를 요청하는 거라고 생각 => 새로 고침의 의도가 있을 수 있음
-      if(state is CursorPagination && !forceRefetch) { // pagination을 한 번 이상해서 이미 데이터가 있음
+      if (state is CursorPagination &&
+          !forceRefetch) { // pagination을 한 번 이상해서 이미 데이터가 있음
         // 아직 dart에서 state.을 바로 사용할 수 없어서 CursorPagination이라는 것을 한 번 더 명시
         final pState = state as CursorPagination;
 
@@ -93,7 +72,7 @@ class RestaurantStateNotifier
       final isRefetching = state is CursorPaginationRefetching;
       final isFetchingMore = state is CursorPaginationFetchingMore;
 
-      if(fetchMore && (isLoading || isRefetching || isFetchingMore)) {
+      if (fetchMore && (isLoading || isRefetching || isFetchingMore)) {
         return;
       }
 
@@ -107,16 +86,17 @@ class RestaurantStateNotifier
       // fetchMore 상황
       // 데이터를 추가로 더 가져오는 상황
       if (fetchMore) {
-        final pState = state as CursorPagination; // fetchMore을 실행할 수 있는 상황 = 화면에 데이터가 보여지는 상황
+        final pState = state as CursorPagination<T>; // fetchMore을 실행할 수 있는 상황 = 화면에 데이터가 보여지는 상황
 
         // 데이터를 유지한 채로 class 이름만 변경
+        // <>이 없다 -> dynamic으로 취급 -> dynamic을 줄이는 것이 좋음
         state = CursorPaginationFetchingMore(
           meta: pState.meta,
           data: pState.data,
         );
 
         paginationParams = paginationParams.copyWith(
-          after: pState.data.last.id,
+          after: pState.data.last.id, // CursorPagination<T>이기 때문에 id가 무조건 존재
         );
       }
       // ===
@@ -125,10 +105,10 @@ class RestaurantStateNotifier
         // 만약에 데이터가 있는 상황이라면
         // 기존 데이터를 보존한 채로 Fetch (API 요청)를 진행
         if (state is CursorPagination && !forceRefetch) {
-          final pState = state as CursorPagination;
+          final pState = state as CursorPagination<T>;
 
           // 데이터를 유지하다가 새로운 데이터가 오면 대체
-          state = CursorPaginationRefetching(
+          state = CursorPaginationRefetching<T>(
             meta: pState.meta,
             data: pState.data,
           );
@@ -146,7 +126,7 @@ class RestaurantStateNotifier
       );
 
       if (state is CursorPaginationFetchingMore) {
-        final pState = state as CursorPaginationFetchingMore;
+        final pState = state as CursorPaginationFetchingMore<T>;
 
         // 응답이 다 왔기 때문에 로딩 상태를 로딩이 끝난 상태로 변경
         state = resp.copyWith(
@@ -160,37 +140,10 @@ class RestaurantStateNotifier
         // resp는 맨처음 데이터라서
         state = resp;
       }
-    }catch(e) {
+    } catch (e, stack) {
+      print(e);
+      print(stack);
       state = CursorPaginationError(message: "데이터를 가져오지 못했습니다.");
     }
-  }
-
-  void getDetail({
-    required String id,
-  }) async {
-   // 만약에 아직 데이터가 하나도 없는 상태라면 (CursorPagination이 아니라면)
-   // 데이터를 가져오는 시도를 한다
-   if (state is! CursorPagination) {
-     await this.paginate();
-   }
-
-   // pagination을 했는데도 state가 CursorPagination이 아닐 떄 그냥 리턴
-    if (state is! CursorPagination) {
-      return;
-    }
-
-    final pState = state as CursorPagination;
-    
-    final resp = await repository.getRestaurantDetail(id: id);
-
-    // [RestaurantModel(1), RestaurantModel(2), RestaurantModel(3)]
-   // id: 2인 친구들 Detail 모델을 가져와라
-   // getDetail(id:2);
-   // [RestaurantModel(1), RestaurantDetailModel(2), RestaurantModel(3)]
-   state = pState.copyWith(
-      // 특정 e의 id와 상세정보로 가져오려고 하는 id값이 같으면 element를 resp로 변경
-      // => 요청을 한 데이터만 restaurantDetail로 변경
-      data: pState.data.map<RestaurantModel>((e) => e.id == id ? resp : e).toList(),
-    );
   }
 }

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_delivery_app/common/dio/dio.dart';
 import 'package:flutter_delivery_app/common/model/cursor_pagination_model.dart';
 import 'package:flutter_delivery_app/common/model/pagination_params.dart';
+import 'package:flutter_delivery_app/common/repository/base_pagination_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrofit/retrofit.dart';
 import '../../common/const/data.dart';
@@ -22,8 +23,9 @@ final restaurantRepositoryProvider = Provider<RestaurantRepository>(
     }
 );
 
+// 인터페이스를 implements해 RestaurantRepository는 IBasePaginationRepository도 됨
 @RestApi()
-abstract class RestaurantRepository { // repository 클래스는 무조건 abstract로 선언
+abstract class RestaurantRepository implements IBasePaginationRepository<RestaurantModel> { // repository 클래스는 무조건 abstract로 선언
   // http://$ip/restaurant
   factory RestaurantRepository(Dio dio, {String baseUrl}) =
   _RestaurantRepository;

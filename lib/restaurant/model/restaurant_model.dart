@@ -1,6 +1,7 @@
 // 3가지 값만 존재하니까 enum 사용
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_delivery_app/common/data_utils.dart';
+import 'package:flutter_delivery_app/common/utils/data_utils.dart';
+import 'package:flutter_delivery_app/common/model/model_with_id.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../common/const/data.dart';
@@ -17,8 +18,8 @@ enum RestaurantPriceRange {
 }
 
 @JsonSerializable() // 자동으로 코드 생성
-class RestaurantModel {
-  final String id;
+class RestaurantModel implements IModelWithId {
+  final String id; // implements로 인해 id를 정의하지 않으면 에러
   final String name;
   // .g파일은 바꿀 수 없음.
   // 전환하는 방식을 변경하고 싶은 속성 위에 JsonKey 사용
